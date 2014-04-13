@@ -3,36 +3,38 @@
 #include <ctime>      // std::time()
 #include <cstdlib>    // std::rand, std::srand
 #include <vector>     // std::vector
-#include <algorithm>  // std::iter_swap, stdd::suffle
+#include <algorithm>  // std::iter_swap, std::suffle
 #include <random>     // std::default_random_engine
 #include <chrono>     // std::chrono::system_clock
+#include <iterator>   // std::distance
 
 using namespace std;
 
-pair<int, int> find(vector<int>& l, int a, int b, int k, int d) {
+pair<int, int> find(vector<int>& l, const vector<int>::iterator a, const vector<int>::iterator b, int k, int d) {
     // Pick the pivot and move it to the end
-    int r = a + (rand() % (b - a + 1));
-    swap(l[r], l[b]);
-    int e = l[b];
+    auto r = (distance(a, b) == 1) ? 0 : rand() % (distance(a, b) - 1);
+    iter_swap(a + r, b-1);
+    int e = *(b-1);
 
-    int ptr = a;
-    for (int i = a; i < b; ++i) {
-        if (l[i] < e) {
-            swap(l[ptr], l[i]);
-            ptr++;
+    auto ptr = a;
+    for (auto i = a; i != b-1; ++i) {
+        if (*i < e) {
+            iter_swap(ptr, i);
+            ++ptr;
         }
     }
 
     // Swap e to its right place
-    swap(l[ptr], l[b]);
+    iter_swap(ptr, b-1);
 
     // Are we finished? If not, recurse
-    int l1_size = ptr - a;
-    if (l1_size == k) {
+    int l1_size = distance(a, ptr);
+    if (l1_size == k - 1) {
         return pair<int, int>(e, d);
     }
 
-    return (l1_size > k) ? find(l, a, ptr-1, k, d+1) : find(l, ptr+1, b, k - l1_size - 1, d+1);
+    if (l1_size > k - 1) return find(l, a, ptr, k, d+1);
+    else return find(l, ptr+1, b, k - l1_size - 1, d+1);
 }
 
 void shuffle(vector<int> &v) {
@@ -44,12 +46,12 @@ int main() {
     srand(time(nullptr));
 
     vector<int> v;
-    for (int i = 0; i < 1000; ++i) v.push_back(i);
+    for (int i = 1; i <= 10000; ++i) v.push_back(i);
 
     unsigned long acc = 0;
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 10000; ++i) {
         shuffle(v);
-        acc += find(v, 0, v.size() - 1, 500, 0).second;
+        acc += find(v, v.begin(), v.end(), 500, 0).first;
     }
-    cout << "Mean: " << (acc / 1000.0) << endl;
+    cout << "Mean: " << (acc / 10000.0) << endl;
 }
