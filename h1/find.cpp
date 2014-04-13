@@ -10,7 +10,7 @@
 
 using namespace std;
 
-pair<int, int> find(vector<int>& l, const vector<int>::iterator a, const vector<int>::iterator b, int k, int d) {
+pair<int, int> find(vector<int>& l, const vector<int>::iterator a, const vector<int>::iterator b, int k, int d, int comp) {
     // Pick the pivot and move it to the end
     int size = distance(a, b);
     auto r = (size == 1) ? 0 : rand() % (size - 1);
@@ -20,6 +20,7 @@ pair<int, int> find(vector<int>& l, const vector<int>::iterator a, const vector<
     // Partition the array
     auto ptr = a;
     for (auto i = a; i != b-1; ++i) {
+        comp++;
         if (*i < e) {
             iter_swap(ptr, i);
             ++ptr;
@@ -29,11 +30,11 @@ pair<int, int> find(vector<int>& l, const vector<int>::iterator a, const vector<
     // Are we finished? If not, recurse
     int l1_size = distance(a, ptr);
     if (l1_size == k - 1) {
-        return pair<int, int>(e, d);
+        return pair<int, int>(d, comp);
     }
 
-    if (l1_size > k - 1) return find(l, a, ptr, k, d+1);
-    else return find(l, ptr, b-1, k - l1_size - 1, d+1);
+    if (l1_size > k - 1) return find(l, a, ptr, k, d+1, comp);
+    else return find(l, ptr, b-1, k - l1_size - 1, d+1, comp);
 }
 
 void shuffle(vector<int> &v) {
@@ -50,7 +51,7 @@ int main() {
     unsigned long acc = 0;
     for (int i = 0; i < 10000; ++i) {
         shuffle(v);
-        acc += find(v, v.begin(), v.end(), 500, 0).first;
+        acc += find(v, v.begin(), v.end(), 500, 0, 0).first;
     }
     cout << "Mean: " << (acc / 10000.0) << endl;
 }
